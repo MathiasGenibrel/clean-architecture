@@ -1,6 +1,7 @@
 import {
   DateProvider,
   Message,
+  MessageIsEmpty,
   MessageRepository,
   MessageTooLongError,
   PostMessageCommand,
@@ -8,17 +9,22 @@ import {
 } from "../post-message.usecase";
 
 describe("Feature: Posting a message", () => {
+  let fixture: Fixture;
+  beforeEach(() => {
+    fixture = createFixture();
+  });
+
   describe("Rule: A message can contain a maximum of 280 characters", () => {
     test("Alice can post a message on her timeline", () => {
-      givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+      fixture.givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
 
-      whenUserPostAmessage({
+      fixture.whenUserPostAmessage({
         id: "message-id",
         text: "Hello World!",
         author: "Alice",
       });
 
-      thenPostedMessageShouldBe({
+      fixture.thenPostedMessageShouldBe({
         id: "message-id",
         text: "Hello World!",
         author: "Alice",
@@ -30,25 +36,51 @@ describe("Feature: Posting a message", () => {
       const textWidthLengthOf281 =
         "nufrhscodbrkzcdccsbvhskgimqmcnprzsvxhkcaqftjfkqkhbkpowywfkvisquergtkdptfhpforzgeyjrhdjffmanwqpamrohxslifeadctmhigunxmlyiiyntbbnxjfowsceqndcyvkhrmaunonhpogskyyjylcsgtktettojsdvnygnhgvgloghrfdreavsofomnkrjixuixmtjtkwpqvvmnmryycfrtrbeoztayarrvsdieqfdlsbknxoxzdbfnimnwxctjpbwxzkppujsyh";
 
-      givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+      fixture.givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
 
-      whenUserPostAmessage({
+      fixture.whenUserPostAmessage({
         id: "message-id",
         text: textWidthLengthOf281,
         author: "Alice",
       });
 
-      thenErrorShouldBe(MessageTooLongError);
+      fixture.thenErrorShouldBe(MessageTooLongError);
+    });
+  });
+
+  describe("Rule: A message cannot be empty", () => {
+    test("Alice cannot post an empty message", () => {
+      fixture.givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+
+      fixture.whenUserPostAmessage({
+        id: "message-id",
+        text: "",
+        author: "Alice",
+      });
+
+      fixture.thenErrorShouldBe(MessageIsEmpty);
+    });
+
+    test("Alice cannot post a message with only whitespaces", () => {
+      fixture.givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+
+      fixture.whenUserPostAmessage({
+        id: "message-id",
+        text: "     ",
+        author: "Alice",
+      });
+
+      fixture.thenErrorShouldBe(MessageIsEmpty);
     });
   });
 });
 
-let message: Message;
-let thrownError: Error;
-
 class InMemoryMessageRepository implements MessageRepository {
+  // @ts-ignore
+  message: Message;
+
   save(msg: Message): void {
-    message = msg;
+    this.message = msg;
   }
 }
 
@@ -61,30 +93,35 @@ class StubDateProvider implements DateProvider {
   }
 }
 
-const messageRepository = new InMemoryMessageRepository();
-const dateProvider = new StubDateProvider();
+const createFixture = () => {
+  let thrownError: Error;
 
-const postMessageUsecase = new PostMessageUsecase(
-  messageRepository,
-  dateProvider
-);
+  const messageRepository = new InMemoryMessageRepository();
+  const dateProvider = new StubDateProvider();
 
-function givenNowIs(_now: Date) {
-  dateProvider.now = _now;
-}
+  const postMessageUsecase = new PostMessageUsecase(
+    messageRepository,
+    dateProvider
+  );
 
-function whenUserPostAmessage(postMessageCommand: PostMessageCommand) {
-  try {
-    postMessageUsecase.handle(postMessageCommand);
-  } catch (err) {
-    thrownError = err as MessageTooLongError;
-  }
-}
+  return {
+    givenNowIs(_now: Date) {
+      dateProvider.now = _now;
+    },
+    whenUserPostAmessage(postMessageCommand: PostMessageCommand) {
+      try {
+        postMessageUsecase.handle(postMessageCommand);
+      } catch (err) {
+        thrownError = err as Error;
+      }
+    },
+    thenPostedMessageShouldBe(expectedMessage: Message) {
+      expect(expectedMessage).toEqual(messageRepository.message);
+    },
+    thenErrorShouldBe(expectedErrorClass: new () => Error) {
+      expect(thrownError).toBeInstanceOf(expectedErrorClass);
+    },
+  };
+};
 
-function thenPostedMessageShouldBe(expectedMessage: Message) {
-  expect(expectedMessage).toEqual(message);
-}
-
-function thenErrorShouldBe(expectedErrorClass: new () => Error) {
-  expect(thrownError).toBeInstanceOf(expectedErrorClass);
-}
+type Fixture = ReturnType<typeof createFixture>;
