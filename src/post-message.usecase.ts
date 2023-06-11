@@ -19,6 +19,8 @@ export interface DateProvider {
   getNow: () => Date;
 }
 
+export class MessageTooLongError extends Error {}
+
 export class PostMessageUsecase {
   constructor(
     private readonly messageRepository: MessageRepository,
@@ -26,6 +28,8 @@ export class PostMessageUsecase {
   ) {}
 
   handle(messagePostedCommand: PostMessageCommand) {
+    if (messagePostedCommand.text.length > 280) throw new MessageTooLongError();
+
     this.messageRepository.save({
       id: messagePostedCommand.id,
       text: messagePostedCommand.text,

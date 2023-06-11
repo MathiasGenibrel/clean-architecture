@@ -2,6 +2,7 @@ import {
   DateProvider,
   Message,
   MessageRepository,
+  MessageTooLongError,
   PostMessageCommand,
   PostMessageUsecase,
 } from "../post-message.usecase";
@@ -24,10 +25,26 @@ describe("Feature: Posting a message", () => {
         publishedAt: new Date("2023-01-19T19:00:00.000Z"),
       });
     });
+
+    test("Alice cannot post a message with more than 280 characters", () => {
+      const textWidthLengthOf281 =
+        "nufrhscodbrkzcdccsbvhskgimqmcnprzsvxhkcaqftjfkqkhbkpowywfkvisquergtkdptfhpforzgeyjrhdjffmanwqpamrohxslifeadctmhigunxmlyiiyntbbnxjfowsceqndcyvkhrmaunonhpogskyyjylcsgtktettojsdvnygnhgvgloghrfdreavsofomnkrjixuixmtjtkwpqvvmnmryycfrtrbeoztayarrvsdieqfdlsbknxoxzdbfnimnwxctjpbwxzkppujsyh";
+
+      givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+
+      whenUserPostAmessage({
+        id: "message-id",
+        text: textWidthLengthOf281,
+        author: "Alice",
+      });
+
+      thenErrorShouldBe(MessageTooLongError);
+    });
   });
 });
 
 let message: Message;
+let thrownError: Error;
 
 class InMemoryMessageRepository implements MessageRepository {
   save(msg: Message): void {
@@ -57,9 +74,17 @@ function givenNowIs(_now: Date) {
 }
 
 function whenUserPostAmessage(postMessageCommand: PostMessageCommand) {
-  postMessageUsecase.handle(postMessageCommand);
+  try {
+    postMessageUsecase.handle(postMessageCommand);
+  } catch (err) {
+    thrownError = err as MessageTooLongError;
+  }
 }
 
 function thenPostedMessageShouldBe(expectedMessage: Message) {
   expect(expectedMessage).toEqual(message);
+}
+
+function thenErrorShouldBe(expectedErrorClass: new () => Error) {
+  expect(thrownError).toBeInstanceOf(expectedErrorClass);
 }
