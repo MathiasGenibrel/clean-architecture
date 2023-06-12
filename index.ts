@@ -5,11 +5,11 @@ import {
   PostMessageCommand,
   PostMessageUsecase,
 } from "./src/post-message.usecase";
-import { InMemoryMessageRepository } from "./src/inmemory-message.repository";
+import { MessageFsRepository } from "./src/message.fs.repository";
 
 const program = new Command();
 
-const messageRepository = new InMemoryMessageRepository();
+const messageRepository = new MessageFsRepository();
 
 class RealDateProvider implements DateProvider {
   getNow(): Date {
@@ -34,7 +34,7 @@ program
   .description("Create a new post on user timeline")
   .argument("<user>", "The current user")
   .argument("<message>", "The message to post")
-  .action((user, message) => {
+  .action(async (user, message) => {
     const postMessageCommand: PostMessageCommand = {
       id: "message-id",
       text: message,
@@ -42,9 +42,8 @@ program
     };
 
     try {
-      postMessageUsecase.handle(postMessageCommand);
+      await postMessageUsecase.handle(postMessageCommand);
       console.log("✅  Message posté");
-      console.table([messageRepository.message]);
     } catch (err) {
       console.log("❌", err);
     }
