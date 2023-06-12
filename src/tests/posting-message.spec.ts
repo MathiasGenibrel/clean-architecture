@@ -2,11 +2,11 @@ import {
   DateProvider,
   Message,
   MessageIsEmpty,
-  MessageRepository,
   MessageTooLongError,
   PostMessageCommand,
   PostMessageUsecase,
 } from "../post-message.usecase";
+import { InMemoryMessageRepository } from "../inmemory-message.repository";
 
 describe("Feature: Posting a message", () => {
   let fixture: Fixture;
@@ -74,15 +74,6 @@ describe("Feature: Posting a message", () => {
     });
   });
 });
-
-class InMemoryMessageRepository implements MessageRepository {
-  // @ts-ignore
-  message: Message;
-
-  save(msg: Message): void {
-    this.message = msg;
-  }
-}
 
 class StubDateProvider implements DateProvider {
   // @ts-ignore
