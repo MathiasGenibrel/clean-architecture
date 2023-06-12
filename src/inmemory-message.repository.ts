@@ -4,7 +4,7 @@ export class InMemoryMessageRepository implements MessageRepository {
   // @ts-ignore
   message: Message;
 
-  save(msg: Message): void {
+  async save(msg: Message): Promise<void> {
     this.message = msg;
   }
 }
