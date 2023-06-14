@@ -9,4 +9,8 @@ export class MessageFsRepository implements MessageRepository {
       JSON.stringify(msg)
     );
   }
+
+  async getMessagesByAuthor(author: string): Promise<Message[]> {
+    throw new Error("Not implemented");
+  }
 }

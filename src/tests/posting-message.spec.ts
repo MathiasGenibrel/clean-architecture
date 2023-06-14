@@ -24,7 +24,7 @@ describe("Feature: Posting a message", () => {
         author: "Alice",
       });
 
-      fixture.thenPostedMessageShouldBe({
+      await fixture.thenPostedMessageShouldBe({
         id: "message-id",
         text: "Hello World!",
         author: "Alice",
@@ -106,8 +106,10 @@ const createFixture = () => {
         thrownError = err as Error;
       }
     },
-    thenPostedMessageShouldBe(expectedMessage: Message) {
-      expect(expectedMessage).toEqual(messageRepository.message);
+    async thenPostedMessageShouldBe(expectedMessage: Message) {
+      expect(expectedMessage).toEqual(
+        await messageRepository.getMessage(expectedMessage.id)
+      );
     },
     thenErrorShouldBe(expectedErrorClass: new () => Error) {
       expect(thrownError).toBeInstanceOf(expectedErrorClass);

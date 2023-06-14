@@ -13,6 +13,7 @@ export type Message = {
 
 export interface MessageRepository {
   save: (msg: Message) => Promise<void>;
+  getMessagesByAuthor: (author: string) => Promise<Message[]>;
 }
 
 export interface DateProvider {
