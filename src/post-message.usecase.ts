@@ -33,7 +33,7 @@ export class PostMessageUsecase {
     if (messagePostedCommand.text.trim().length === 0)
       throw new MessageIsEmpty();
 
-    this.messageRepository.save({
+    await this.messageRepository.save({
       id: messagePostedCommand.id,
       text: messagePostedCommand.text,
       author: messagePostedCommand.author,
