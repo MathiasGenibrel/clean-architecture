@@ -1,4 +1,5 @@
-import { Message, MessageRepository } from "./post-message.usecase";
+import { MessageRepository } from "./types/message.repository";
+import { Message } from "./types/message";
 
 export class InMemoryMessageRepository implements MessageRepository {
   private messages: Map<string, Message> = new Map();
@@ -7,7 +8,7 @@ export class InMemoryMessageRepository implements MessageRepository {
     this.messages.set(msg.id, msg);
   }
 
-  async getMessage(id: string): Promise<Message> {
+  async getMessageById(id: string): Promise<Message> {
     return this.messages.get(id)!;
   }
 

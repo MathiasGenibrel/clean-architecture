@@ -1,6 +1,7 @@
-import { MessageRepository, Message } from "./post-message.usecase";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { MessageRepository } from "./types/message.repository";
+import { Message } from "./types/message";
 
 export class MessageFsRepository implements MessageRepository {
   save(msg: Message): Promise<void> {

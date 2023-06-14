@@ -1,4 +1,4 @@
-import { MessageRepository } from "./post-message.usecase";
+import { MessageRepository } from "./types/message.repository";
 
 export type Post = {
   text: string;

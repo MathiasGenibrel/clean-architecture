@@ -1,20 +1,10 @@
+import { MessageRepository } from "./types/message.repository";
+
 export type PostMessageCommand = {
   id: string;
   text: string;
   author: string;
 };
-
-export type Message = {
-  id: string;
-  text: string;
-  author: string;
-  publishedAt: Date;
-};
-
-export interface MessageRepository {
-  save: (msg: Message) => Promise<void>;
-  getMessagesByAuthor: (author: string) => Promise<Message[]>;
-}
 
 export interface DateProvider {
   getNow: () => Date;

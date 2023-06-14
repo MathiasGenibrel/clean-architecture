@@ -1,6 +1,6 @@
-import { Message } from "../post-message.usecase";
 import { Post, ViewTimelineUseCase } from "../view-timeline.usecase";
 import { InMemoryMessageRepository } from "../inmemory-message.repository";
+import { Message } from "../types/message";
 
 describe("Feature: View timeline", () => {
   let fixture: Fixture;
