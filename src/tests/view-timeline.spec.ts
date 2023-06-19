@@ -1,6 +1,7 @@
 import { Post, ViewTimelineUseCase } from "../view-timeline.usecase";
 import { InMemoryMessageRepository } from "../inmemory-message.repository";
 import { Message } from "../types/message";
+import { StubDateProvider } from "../stub-date-provider";
 
 describe("Feature: View timeline", () => {
   let fixture: Fixture;
@@ -65,7 +66,14 @@ describe("Feature: View timeline", () => {
 const createFixture = () => {
   let timeline: Post[];
   const messageRepository = new InMemoryMessageRepository();
-  const viewTimelineUseCase = new ViewTimelineUseCase(messageRepository);
+  const dateProvider = new StubDateProvider();
+
+  dateProvider.now = new Date("2023-01-19T14:16:35.000Z");
+
+  const viewTimelineUseCase = new ViewTimelineUseCase(
+    messageRepository,
+    dateProvider
+  );
 
   return {
     getExistingTimeline: async (messages: Message[]) => {
