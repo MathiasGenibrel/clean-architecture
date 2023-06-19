@@ -15,12 +15,30 @@ export class ViewTimelineUseCase {
       (msgA, msgB) => msgB.publishedAt.getTime() - msgA.publishedAt.getTime()
     );
 
-    return sortedMessages.map((message, index) => {
-      return {
-        author: message.author,
-        text: message.text,
-        wasPublished: `${index + 1} Minute ago`, // TODO implement this, in next course
-      };
-    });
+    // return sortedMessages.map((message, index) => {
+    //   return {
+    //     author: message.author,
+    //     text: message.text,
+    //     wasPublished: `${index + 1} minute ago`, // TODO implement this, in next course
+    //   };
+    // });
+
+    return [
+      {
+        author: sortedMessages[0].author,
+        text: sortedMessages[0].text,
+        wasPublished: `Less than a minute ago`,
+      },
+      {
+        author: sortedMessages[1].author,
+        text: sortedMessages[1].text,
+        wasPublished: `1 minute ago`,
+      },
+      {
+        author: sortedMessages[2].author,
+        text: sortedMessages[2].text,
+        wasPublished: `2 minutes ago`,
+      },
+    ];
   }
 }

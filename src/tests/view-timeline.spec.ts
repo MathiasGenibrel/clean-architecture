@@ -10,8 +10,14 @@ describe("Feature: View timeline", () => {
   });
 
   describe("Rule: Messages appear in reverse chronological order", () => {
-    test("Alice can see the 2 messages she posted in her timeline", async () => {
+    test("Alice can see the 3 messages she posted in her timeline", async () => {
       await fixture.getExistingTimeline([
+        {
+          id: "perfect-id",
+          author: "Alice",
+          text: "Perfect day !",
+          publishedAt: new Date("2023-01-19T14:16:34.943Z"),
+        },
         {
           id: "how-id",
           author: "Alice",
@@ -38,13 +44,18 @@ describe("Feature: View timeline", () => {
       fixture.thenTimelineShouldBe([
         {
           author: "Alice",
+          text: "Perfect day !",
+          wasPublished: "Less than a minute ago",
+        },
+        {
+          author: "Alice",
           text: "How are you ?",
-          wasPublished: "1 Minute ago",
+          wasPublished: "1 minute ago",
         },
         {
           author: "Alice",
           text: "Hello World!",
-          wasPublished: "2 Minute ago",
+          wasPublished: "2 minutes ago",
         },
       ]);
     });
