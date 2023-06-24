@@ -1,44 +1,41 @@
-import { Post, ViewTimelineUseCase } from "../view-timeline.usecase";
-import { InMemoryMessageRepository } from "../inmemory-message.repository";
-import { Message } from "../types/message";
-import { StubDateProvider } from "../stub-date-provider";
+import { createMessagingFixture, MessagingFixture } from "./messaging.fixture";
+import { MessagingBuilder } from "./messaging.builder";
 
 describe("Feature: View timeline", () => {
-  let fixture: Fixture;
+  let fixture: MessagingFixture;
 
   beforeEach(() => {
-    fixture = createFixture();
+    fixture = createMessagingFixture();
   });
 
   describe("Rule: Messages appear in reverse chronological order", () => {
     test("Alice can see the 3 messages she posted in her timeline", async () => {
+      const aliceMessage = new MessagingBuilder().authoredBy("Alice");
+
       await fixture.getExistingTimeline([
-        {
-          id: "perfect-id",
-          author: "Alice",
-          text: "Perfect day !",
-          publishedAt: new Date("2023-01-19T14:16:34.943Z"),
-        },
-        {
-          id: "how-id",
-          author: "Alice",
-          text: "How are you ?",
-          publishedAt: new Date("2023-01-19T14:15:34.943Z"),
-        },
-        {
-          id: "notch-id",
-          author: "Notch",
-          text: "Never dig down!",
-          publishedAt: new Date("2023-01-19T14:14:34.198Z"),
-        },
-        {
-          id: "hello-id",
-          author: "Alice",
-          text: "Hello World!",
-          publishedAt: new Date("2023-01-19T14:14:32.875Z"),
-        },
+        aliceMessage
+          .withId("perfect-id")
+          .withText("Perfect day !")
+          .publishedAt(new Date("2023-01-19T14:16:34.943Z"))
+          .build(),
+        aliceMessage
+          .withId("how-id")
+          .withText("How are you ?")
+          .publishedAt(new Date("2023-01-19T14:15:34.943Z"))
+          .build(),
+        new MessagingBuilder()
+          .withId("notch-id")
+          .authoredBy("Notch")
+          .withText("Never dig down!")
+          .publishedAt(new Date("2023-01-19T14:14:34.198Z"))
+          .build(),
+        aliceMessage
+          .withId("hello-id")
+          .withText("Hello World!")
+          .publishedAt(new Date("2023-01-19T14:14:32.875Z"))
+          .build(),
       ]);
-      fixture.getDateNow(new Date("2023-01-19T14:16:39.177Z"));
+      fixture.givenNowIs(new Date("2023-01-19T14:16:35.000Z"));
 
       await fixture.whenUserViewTimeline("Alice");
 
@@ -62,31 +59,3 @@ describe("Feature: View timeline", () => {
     });
   });
 });
-
-const createFixture = () => {
-  let timeline: Post[];
-  const messageRepository = new InMemoryMessageRepository();
-  const dateProvider = new StubDateProvider();
-
-  dateProvider.now = new Date("2023-01-19T14:16:35.000Z");
-
-  const viewTimelineUseCase = new ViewTimelineUseCase(
-    messageRepository,
-    dateProvider
-  );
-
-  return {
-    getExistingTimeline: async (messages: Message[]) => {
-      await messageRepository.bulkSave(messages);
-    },
-    getDateNow: (_now: Date) => {},
-    whenUserViewTimeline: async (author: string) => {
-      timeline = await viewTimelineUseCase.handle(author);
-    },
-    thenTimelineShouldBe: (expectedTimeline: Post[]) => {
-      expect(timeline).toEqual(expectedTimeline);
-    },
-  };
-};
-
-type Fixture = ReturnType<typeof createFixture>;
