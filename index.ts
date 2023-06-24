@@ -6,6 +6,7 @@ import {
   PostMessageUsecase,
 } from "./src/post-message.usecase";
 import { MessageFsRepository } from "./src/message.fs.repository";
+import { ViewTimelineUseCase } from "./src/view-timeline.usecase";
 
 const program = new Command();
 
@@ -24,6 +25,11 @@ const postMessageUsecase = new PostMessageUsecase(
   dateProvider
 );
 
+const viewTimelineUseCase = new ViewTimelineUseCase(
+  messageRepository,
+  dateProvider
+);
+
 program
   .name("Tweet")
   .description("Social to test clean architecture")
@@ -32,18 +38,31 @@ program
 program
   .command("post")
   .description("Create a new post on user timeline")
-  .argument("<user>", "The current user")
+  .argument("<author>", "The current user")
   .argument("<message>", "The message to post")
-  .action(async (user, message) => {
+  .action(async (author, message) => {
     const postMessageCommand: PostMessageCommand = {
-      id: "message-id",
+      id: `${Math.round(Math.random() * 10_000)}`,
       text: message,
-      author: user,
+      author: author,
     };
 
     try {
       await postMessageUsecase.handle(postMessageCommand);
       console.log("✅  Message posté");
+    } catch (err) {
+      console.log("❌", err);
+    }
+  });
+
+program
+  .command("view")
+  .description("View the timeline of an user")
+  .argument("<author>", "The current author")
+  .action(async (author) => {
+    try {
+      const messagesOfAuthor = await viewTimelineUseCase.handle(author);
+      console.table(messagesOfAuthor);
     } catch (err) {
       console.log("❌", err);
     }
